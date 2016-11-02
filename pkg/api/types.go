@@ -31,13 +31,12 @@ type ResourcePurchasePlan struct {
 // ContainerService complies with the ARM model of
 // resource definition in a JSON template.
 type ContainerService struct {
-	APIVersion string               `json:"apiVersion"`
-	ID         string               `json:"id"`
-	Location   string               `json:"location"`
-	Name       string               `json:"name"`
-	Plan       ResourcePurchasePlan `json:"plan"`
-	Tags       map[string]string    `json:"tags"`
-	Type       string               `json:"type"`
+	ID       string               `json:"id"`
+	Location string               `json:"location"`
+	Name     string               `json:"name"`
+	Plan     ResourcePurchasePlan `json:"plan"`
+	Tags     map[string]string    `json:"tags"`
+	Type     string               `json:"type"`
 
 	Properties Properties `json:"properties"`
 }

@@ -10,45 +10,47 @@ import (
 )
 
 // LoadContainerServiceFromFile loads an ACS Cluster API Model from a JSON file
-func LoadContainerServiceFromFile(jsonFile string) (*ContainerService, error) {
+func LoadContainerServiceFromFile(jsonFile string) (*ContainerService, string, error) {
 	contents, e := ioutil.ReadFile(jsonFile)
 	if e != nil {
-		return nil, fmt.Errorf("error reading file %s: %s", jsonFile, e.Error())
+		return nil, "", fmt.Errorf("error reading file %s: %s", jsonFile, e.Error())
 	}
 	return LoadContainerService(contents)
 }
 
 // LoadContainerService loads an ACS Cluster API Model, validates it, and returns the unversioned representation
-func LoadContainerService(contents []byte) (*ContainerService, error) {
+func LoadContainerService(contents []byte) (*ContainerService, string, error) {
 	m := &TypeMeta{}
 	if err := json.Unmarshal(contents, &m); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	switch m.APIVersion {
+	version := m.APIVersion
+
+	switch version {
 	case v20160330.APIVersion:
 		containerService := &v20160330.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
-			return nil, e
+			return nil, version, e
 		}
 
 		if e := containerService.Properties.Validate(); e != nil {
-			return nil, e
+			return nil, version, e
 		}
-		return ConvertV20160330ContainerService(containerService), nil
+		return ConvertV20160330ContainerService(containerService), version, nil
 
 	case vlabs.APIVersion:
 		containerService := &vlabs.ContainerService{}
 		if e := json.Unmarshal(contents, &containerService); e != nil {
-			return nil, e
+			return nil, version, e
 		}
 
 		if e := containerService.Properties.Validate(); e != nil {
-			return nil, e
+			return nil, version, e
 		}
-		return ConvertVLabsContainerService(containerService), nil
+		return ConvertVLabsContainerService(containerService), version, nil
 
 	default:
-		return nil, fmt.Errorf("unrecognized APIVersion '%s'", m.APIVersion)
+		return nil, version, fmt.Errorf("unrecognized APIVersion '%s'", m.APIVersion)
 	}
 }

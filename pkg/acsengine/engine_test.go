@@ -25,7 +25,7 @@ func TestExpected(t *testing.T) {
 	}
 
 	for _, tuple := range *apiModelTestFiles {
-		containerService, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename)
+		containerService, _, err := api.LoadContainerServiceFromFile(tuple.APIModelFilename)
 		if err != nil {
 			t.Error(err.Error())
 			continue

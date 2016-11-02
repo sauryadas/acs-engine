@@ -15,7 +15,7 @@ import (
 	"github.com/Azure/acs-engine/pkg/api/vlabs"
 )
 
-func writeArtifacts(containerService *api.ContainerService, template string, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
+func writeArtifacts(containerService *api.ContainerService, apiVersion, template, parameters, artifactsDir string, certsGenerated bool, parametersOnly bool) error {
 	if len(artifactsDir) == 0 {
 		artifactsDir = fmt.Sprintf("%s-%s", containerService.Properties.OrchestratorProfile.OrchestratorType, acsengine.GenerateClusterID(&containerService.Properties))
 		artifactsDir = path.Join("_output", artifactsDir)
@@ -25,7 +25,7 @@ func writeArtifacts(containerService *api.ContainerService, template string, par
 	var b []byte
 	var err error
 	if !parametersOnly {
-		switch containerService.APIVersion {
+		switch apiVersion {
 		case v20160330.APIVersion:
 			v20160330ContainerService := api.ConvertContainerServiceToV20160330(containerService)
 			b, err = json.MarshalIndent(v20160330ContainerService, "", "  ")
@@ -35,7 +35,7 @@ func writeArtifacts(containerService *api.ContainerService, template string, par
 			b, err = json.MarshalIndent(vlabsContainerService, "", "  ")
 
 		default:
-			return fmt.Errorf("invalid version %s for conversion back from unversioned object", containerService.APIVersion)
+			return fmt.Errorf("invalid version %s for conversion back from unversioned object", apiVersion)
 		}
 
 		if err != nil {
@@ -144,6 +144,7 @@ func main() {
 	var containerService *api.ContainerService
 	var template string
 	var parameters string
+	var apiVersion string
 	var err error
 
 	flag.Parse()
@@ -165,7 +166,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if containerService, err = api.LoadContainerServiceFromFile(jsonFile); err != nil {
+	if containerService, apiVersion, err = api.LoadContainerServiceFromFile(jsonFile); err != nil {
 		fmt.Fprintf(os.Stderr, "error while loading %s: %s", jsonFile, err.Error())
 		os.Exit(1)
 	}
@@ -187,7 +188,7 @@ func main() {
 		}
 	}
 
-	if err = writeArtifacts(containerService, template, parameters, *artifactsDir, certsGenerated, *parametersOnly); err != nil {
+	if err = writeArtifacts(containerService, apiVersion, template, parameters, *artifactsDir, certsGenerated, *parametersOnly); err != nil {
 		fmt.Fprintf(os.Stderr, "error writing artifacts %s", err.Error())
 		os.Exit(1)
 	}
