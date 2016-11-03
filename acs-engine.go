@@ -28,11 +28,17 @@ func writeArtifacts(containerService *api.ContainerService, apiVersion, template
 		switch apiVersion {
 		case v20160330.APIVersion:
 			v20160330ContainerService := api.ConvertContainerServiceToV20160330(containerService)
-			b, err = json.MarshalIndent(v20160330ContainerService, "", "  ")
+			containerServiceToWrite := acsengine.V20160330ContainerService{}
+			containerServiceToWrite.ContainerService = v20160330ContainerService
+			containerServiceToWrite.APIVersion = apiVersion
+			b, err = json.MarshalIndent(containerServiceToWrite, "", "  ")
 
 		case vlabs.APIVersion:
 			vlabsContainerService := api.ConvertContainerServiceToVLabs(containerService)
-			b, err = json.MarshalIndent(vlabsContainerService, "", "  ")
+			containerServiceToWrite := acsengine.VlabsContainerService{}
+			containerServiceToWrite.ContainerService = vlabsContainerService
+			containerServiceToWrite.APIVersion = apiVersion
+			b, err = json.MarshalIndent(containerServiceToWrite, "", "  ")
 
 		default:
 			return fmt.Errorf("invalid version %s for conversion back from unversioned object", apiVersion)
